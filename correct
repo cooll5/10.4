@@ -1,0 +1,122 @@
+#include <iostream>
+#include <ctime>
+#include <fstream>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+template<typename T>
+
+T* addtolist(T* arr, int& size, T elem);
+void task(string);
+
+void createtext(string filename)
+{
+    char ch;
+    string s;
+    ofstream fout;
+    fout.open(filename);
+    cin.sync();
+    do
+    {
+        string firm, mark;
+        int price;
+        cout << "Firm: ";cin >> firm;
+        cout << "mark: ";cin >> mark;
+        cout << "price: ";cin >> price;
+        cout << "Continue?:(y/n)" ; cin >> ch;
+        fout << firm + " ^ " + to_string(price) + " ^ " + mark << endl;
+    } while (ch == 'y' || ch == 'Y');
+    cout << endl;
+    fout.close();
+}
+
+void printfile(string filename)
+{
+    ifstream fin;
+    fin.open(filename);
+    cout << "===============" << filename << "===============" << endl << endl;
+    string str;
+    while (getline(fin, str))
+    {
+        cout << str << endl;
+    }
+    cout << endl << "======================================" << endl << endl;
+    fin.close();
+}
+
+int main()
+{
+    srand(time(NULL));
+    string filename;
+    cout << "Enter filename: "; cin >> filename;
+    printfile(filename);
+    task(filename);
+
+    system("pause");
+    return 0;
+}
+
+void task(string filename)
+{
+    ifstream fin(filename);
+    //filename.insert(filename.end() - 4, '2');
+    string str;
+    string* firms = new string[0];
+    int* prices = new int[0];
+    int fsize = 0, psize = 0;
+    while (getline(fin, str))
+    {
+        transform(str.begin(), str.end(), str.begin(), tolower);
+        string fname = str.substr(0, str.find_first_of("^"));
+        str.erase(0, str.find_first_of("^") + 1);
+        string pricestr = str.substr(0, str.find_first_of("^"));
+        int price = atoi(pricestr.c_str());
+        str.erase(0, str.find_first_of("^") + 1);
+        bool isvalid = false;
+        for (size_t i = 0; i < fsize; i++)
+        {
+            if (firms[i] == fname)
+            {
+                isvalid = true;
+                if (prices[i] <= price)
+                    prices[i] = price;
+            }
+        }
+        if (!isvalid)
+        {
+            firms = addtolist(firms, fsize, fname);
+            prices = addtolist(prices, psize, price);
+        }
+    }
+    fin.close();
+    ifstream _fin(filename);
+    filename.insert(filename.end() - 4, '2');
+    ofstream fout(filename);
+    string strtowrite = "  -  ";
+    for (size_t i = 0; i < psize; i++)
+    {
+        strtowrite += (to_string(prices[i]) + " ");
+    }
+    while (getline(_fin, str))
+    {
+        fout << str + strtowrite << endl;
+    }
+    _fin.close();
+    fout.close();
+    cout << "Done.\nResult: " << endl;
+    printfile(filename);
+}
+
+template<typename T>
+T* addtolist(T* arr, int &size, T elem)
+{
+    T* arr2 = new T[size + 1];
+    for (size_t i = 0; i < size; i++)
+    {
+        arr2[i] = arr[i];
+    }
+    arr2[size] = elem;
+    size++;
+    return arr2;
+}
